@@ -5,46 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>T8 Parking Community</title>
     <style>
-        :root { --primary: #007AFF; --bg: #f2f2f7; --card: #ffffff; }
+        :root { --primary: #007AFF; --bg: #f2f2f7; --card: #ffffff; 
+                --empty: #34c759; --avail: #5856d6; --almost: #ffcc00; --full: #ff3b30; }
         body { background: var(--bg); font-family: -apple-system, sans-serif; padding: 20px; }
-        .hero { text-align: center; margin-bottom: 20px; }
-        .station-card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .lot-name { font-weight: 800; font-size: 17px; }
-        .prob-bar { height: 8px; background: #eee; border-radius: 4px; margin: 10px 0; overflow: hidden; }
-        .prob-fill { height: 100%; background: var(--primary); width: 0%; transition: 1s; }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; }
+        .station-card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .lot-name { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn { padding: 10px; border-radius: 8px; border: none; font-weight: 600; font-size: 12px; cursor: pointer; color: white; }
     </style>
 </head>
 <body>
-
-    <div class="hero">
-        <h1>T8 Community Parking</h1>
-        <p>Contribute status to help fellow commuters.</p>
-    </div>
-
+    <h1>T8 Community Parking</h1>
     <div id="app-container"></div>
-
     <script>
-        // Data Structure for the Community
         const stations = [
-            { station: "Macarthur", lots: ["Menangle Rd", "Gilchrist Dr"] },
-            { station: "Campbelltown", lots: ["Farrow Multi-Deck", "Hurley St"] },
-            // ... (Add your others here)
+            { station: "Macarthur", lots: ["Menangle Rd Lot", "Gilchrist Dr Lot"] },
+            { station: "Campbelltown", lots: ["Farrow Multi-Deck", "Farrow Outside Lot", "Hurley St Lot"] },
+            { station: "Leumeah", lots: ["Plowman St Lot", "Old Leumeah Rd Lot"] },
+            { station: "Minto", lots: ["Somerset St Lot", "Minto Rd West Lot"] },
+            { station: "Ingleburn", lots: ["First Ave Multi-Storey", "Nardoo St Lot"] },
+            { station: "Glenfield", lots: ["Railway Parade East", "Roy Watts Rd West"] }
         ];
 
-        function getProbability(lotId) {
-            // Logic: Calculates % full based on saved community reports
-            let count = parseInt(localStorage.getItem(lotId + '_reports') || 0);
-            return Math.min(count * 20, 100); // Simple example: each report adds 20% certainty
-        }
-
-        function reportStatus(lotId, type) {
-            if(type === 'full') {
-                let current = parseInt(localStorage.getItem(lotId + '_reports') || 0);
-                localStorage.setItem(lotId + '_reports', current + 1);
-            }
-            alert("Report submitted! Thanks for helping the T8 community.");
+        function report(lot, status) {
+            localStorage.setItem(lot, status);
+            alert("Reported: " + status);
             render();
         }
 
@@ -55,16 +40,15 @@
                 let card = document.createElement('div'); card.className = 'station-card';
                 card.innerHTML = `<h3>${s.station}</h3>`;
                 s.lots.forEach(l => {
-                    let prob = getProbability(l);
+                    let cur = localStorage.getItem(l) || 'Not Reported';
                     card.innerHTML += `
-                        <div class="lot-name">${l}</div>
-                        <div class="prob-bar"><div class="prob-fill" style="width:${prob}%"></div></div>
-                        <small>Fullness Probability: ${prob}%</small>
-                        <div class="btn-group">
-                            <button class="btn" style="background:#eee" onclick="reportStatus('${l}','available')">Available</button>
-                            <button class="btn" style="background:#ff3b30; color:white" onclick="reportStatus('${l}','full')">Report Full</button>
-                        </div>
-                    `;
+                        <div class="lot-name">${l} (Status: ${cur})</div>
+                        <div class="btn-grid">
+                            <button class="btn" style="background:var(--empty)" onclick="report('${l}','Empty')">Empty</button>
+                            <button class="btn" style="background:var(--avail)" onclick="report('${l}','Available')">Available</button>
+                            <button class="btn" style="background:var(--almost)" onclick="report('${l}','Almost Full')">Almost Full</button>
+                            <button class="btn" style="background:var(--full)" onclick="report('${l}','Completely Full')">Completely Full</button>
+                        </div><br>`;
                 });
                 container.appendChild(card);
             });
