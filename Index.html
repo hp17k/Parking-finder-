@@ -3,398 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>T8 Parking Finder</title>
+    <title>T8 Parking Pro</title>
     <style>
         :root {
-            --bg-color: #f2f2f7;
-            --card-color: #ffffff;
-            --text-main: #1c1c1e;
-            --text-sub: #3a3a3c;
-            --text-muted: #8e8e93;
-            --t8-blue: #007aff;
-            --green: #34c759;
-            --yellow: #ffcc00;
-            --red: #ff3b30;
-            --border-radius: 16px;
+            --bg: #f8f9fa;
+            --card: #ffffff;
+            --text: #000000;
+            --sub: #555555;
+            --primary: #007AFF;
+            --avail: #28a745;
+            --fast: #ffc107;
+            --full: #dc3545;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        body { background: var(--bg); color: var(--text); padding: 20px; font-family: -apple-system, sans-serif; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px 16px 40px 16px;
-            letter-spacing: -0.2px;
-        }
+        .dashboard { background: var(--primary); color: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; text-align: center; }
+        .dashboard h2 { font-size: 14px; opacity: 0.8; text-transform: uppercase; }
+        .dashboard .count { font-size: 32px; font-weight: 800; margin: 5px 0; }
 
-        header {
-            text-align: center;
-            margin-bottom: 24px;
-            padding-top: 10px;
-        }
+        .station-card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .station-header { font-size: 20px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+        
+        .lot-row { margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
+        .lot-name { font-weight: 700; font-size: 16px; }
+        .trend { font-size: 12px; color: var(--sub); font-weight: 600; margin: 5px 0; }
 
-        header h1 {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--text-main);
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        header h1 span {
-            color: var(--t8-blue);
-        }
-
-        header p {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .station-card {
-            background: var(--card-color);
-            border-radius: var(--border-radius);
-            margin-bottom: 14px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-            overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .station-card:active {
-            transform: scale(0.99);
-        }
-
-        .station-header {
-            padding: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 19px;
-            background: #fff;
-        }
-
-        .station-title-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .station-icon {
-            color: var(--t8-blue);
-            font-size: 20px;
-        }
-
-        .chevron {
-            font-size: 14px;
-            color: var(--text-muted);
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .station-card.open .chevron {
-            transform: rotate(180dev);
-            content: "▲";
-        }
-
-        /* Using standard character swap via JS, fallback symbol styling */
-        .station-card.open .chevron {
-            transform: rotate(180deg);
-        }
-
-        .lots-container {
-            display: none;
-            padding: 4px 18px 18px 18px;
-            background: #fbfbfd;
-            border-top: 1px solid #f2f2f7;
-        }
-
-        .station-card.open .lots-container {
-            display: block;
-        }
-
-        .lot-row {
-            padding: 16px 0;
-            border-bottom: 1px solid #f2f2f7;
-        }
-
-        .lot-row:last-child {
-            border-bottom: none;
-        }
-
-        .lot-header-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-        }
-
-        .lot-name-container {
-            max-width: 75%;
-        }
-
-        .lot-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .map-btn {
-            background: #e5e5ea;
-            color: var(--text-sub);
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            transition: background 0.2s;
-        }
-
-        .map-btn:active {
-            background: #d1d1d6;
-        }
-
-        .lot-status-text {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .trend-badge {
-            display: inline-block;
-            font-size: 11px;
-            background: rgba(0, 122, 255, 0.08);
-            color: var(--t8-blue);
-            padding: 3px 8px;
-            border-radius: 6px;
-            margin-top: 6px;
-            font-weight: 600;
-        }
-
-        .btn-group {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .status-btn {
-            border: 1px solid #e5e5ea;
-            background: #fff;
-            padding: 10px 8px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-            transition: all 0.15s ease;
-        }
-
-        .status-btn.active[data-status="available"] {
-            background-color: #34c759;
-            border-color: #34c759;
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.2);
-        }
-
-        .status-btn.active[data-status="fast"] {
-            background-color: #ffcc00;
-            border-color: #ffcc00;
-            color: #000;
-            box-shadow: 0 4px 12px rgba(255, 204, 0, 0.2);
-        }
-
-        .status-btn.active[data-status="full"] {
-            background-color: #ff3b30;
-            border-color: #ff3b30;
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2);
-        }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .btn { padding: 12px; border: none; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .active-avail { background: var(--avail); color: white; }
+        .active-fast { background: var(--fast); color: black; }
+        .active-full { background: var(--full); color: white; }
+        .btn:not(.active) { background: #f0f0f0; color: #777; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>🚇 <span>T8</span> Parking Finder</h1>
-        <p>Smart Trends • Local Auto-Reset at Midnight</p>
-    </header>
+    <div class="dashboard">
+        <h2>Commute Readiness</h2>
+        <div class="count" id="summary-count">Loading Status...</div>
+    </div>
 
     <div id="app-container"></div>
 
     <script>
         const parkingData = [
-            {
-                station: "Macarthur",
-                lots: [
-                    { id: "mac_menangle", name: "Menangle Rd Commuter Lot", q: "Macarthur Station Commuter Car Park Menangle Rd" },
-                    { id: "mac_square", name: "Gilchrist Dr Side (Mac Square)", q: "Macarthur Square Station Parking Gilchrist Dr" }
-                ]
-            },
-            {
-                station: "Campbelltown",
-                lots: [
-                    { id: "cam_multideck", name: "Farrow Rd Multi-Deck", q: "Campbelltown Station Commuter Car Park Farrow Rd" },
-                    { id: "cam_outside", name: "Farrow Rd Outside Ground Lot", q: "Farrow Rd Campbelltown Station Parking" },
-                    { id: "cam_hurley", name: "Hurley St Side Lot", q: "Hurley St Campbelltown Station Parking" }
-                ]
-            },
-            {
-                station: "Leumeah",
-                lots: [
-                    { id: "leu_plowman", name: "Plowman St Lot (Stadium Side)", q: "Plowman St Leumeah Commuter Parking" },
-                    { id: "leu_oldroad", name: "Old Leumeah Rd Lot (Shop Side)", q: "Old Leumeah Rd Leumeah Station Parking" }
-                ]
-            },
-            {
-                station: "Minto",
-                lots: [
-                    { id: "min_somerset", name: "Somerset St Lot (Main Commuter)", q: "Somerset St Minto Station Parking" },
-                    { id: "min_west", name: "Minto Rd West Side Lot", q: "Minto Rd Minto Station Parking" }
-                ]
-            },
-            {
-                station: "Ingleburn",
-                lots: [
-                    { id: "ing_firstave", name: "First Ave Multi-Storey", q: "First Ave Ingleburn Commuter Car Park" },
-                    { id: "ing_nardoo", name: "Nardoo St Ground Lot", q: "Nardoo St Ingleburn Station Parking" }
-                ]
-            },
-            {
-                station: "Glenfield",
-                lots: [
-                    { id: "gle_railway", name: "Railway Parade (East Side)", q: "Railway Parade Glenfield Station Parking" },
-                    { id: "gle_roywatts", name: "Roy Watts Rd (West Side)", q: "Roy Watts Rd Glenfield Commuter Car Park" }
-                ]
-            }
+            { station: "Macarthur", lots: [{id: "mac_1", name: "Menangle Rd", q: "Menangle Rd Parking"}, {id: "mac_2", name: "Gilchrist Dr", q: "Gilchrist Dr Parking"}] },
+            { station: "Campbelltown", lots: [{id: "cam_1", name: "Farrow Multi-Deck", q: "Farrow Rd Parking"}, {id: "cam_2", name: "Hurley St", q: "Hurley St Parking"}] },
+            { station: "Leumeah", lots: [{id: "leu_1", name: "Plowman St", q: "Plowman St Parking"}, {id: "leu_2", name: "Old Leumeah Rd", q: "Old Leumeah Rd Parking"}] },
+            { station: "Minto", lots: [{id: "min_1", name: "Somerset St", q: "Somerset St Parking"}, {id: "min_2", name: "Minto Rd", q: "Minto Rd Parking"}] },
+            { station: "Ingleburn", lots: [{id: "ing_1", name: "First Ave", q: "First Ave Parking"}, {id: "ing_2", name: "Nardoo St", q: "Nardoo St Parking"}] },
+            { station: "Glenfield", lots: [{id: "gle_1", name: "Railway Pde", q: "Railway Pde Parking"}, {id: "gle_2", name: "Roy Watts Rd", q: "Roy Watts Rd Parking"}] }
         ];
 
-        function checkMidnightReset() {
-            const todayString = new Date().toDateString();
-            const lastSavedDate = localStorage.getItem('app_last_run_date');
-            
-            if (lastSavedDate && lastSavedDate !== todayString) {
-                parkingData.forEach(item => {
-                    item.lots.forEach(lot => {
-                        localStorage.removeItem(lot.id);
-                        localStorage.removeItem(lot.id + '_time');
-                    });
-                });
-            }
-            localStorage.setItem('app_last_run_date', todayString);
-        }
+        function haptic() { if (window.navigator.vibrate) window.navigator.vibrate(50); }
 
-        function getTrendPrediction(lotId) {
-            const history = JSON.parse(localStorage.getItem(lotId + '_history') || "[]");
-            if (history.length === 0) return "📈 Trend: Analyzing patterns...";
-            
-            const totalMinutes = history.reduce((sum, mins) => sum + mins, 0);
-            const avgMinutes = Math.round(totalMinutes / history.length);
-            
-            const hours = Math.floor(avgMinutes / 60);
-            const mins = avgMinutes % 60;
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            const displayHours = hours % 12 || 12;
-            const displayMins = mins < 10 ? '0' + mins : mins;
-            
-            return `💡 Trend: Historically fills around ${displayHours}:${displayMins} ${ampm}`;
-        }
-
-        function renderApp() {
-            checkMidnightReset();
-            const container = document.getElementById('app-container');
-            container.innerHTML = '';
-
-            parkingData.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'station-card';
-                
-                const header = document.createElement('div');
-                header.className = 'station-header';
-                header.innerHTML = `
-                    <div class="station-title-wrapper">
-                        <span class="station-icon">🚉</span>
-                        <span>${item.station}</span>
-                    </div>
-                    <span class="chevron">▼</span>
-                `;
-                header.onclick = () => card.classList.toggle('open');
-                
-                const lotsContainer = document.createElement('div');
-                lotsContainer.className = 'lots-container';
-
-                item.lots.forEach(lot => {
-                    const savedState = localStorage.getItem(lot.id) || 'available';
-                    const savedTime = localStorage.getItem(lot.id + '_time') || 'No updates today';
-                    const trendText = getTrendPrediction(lot.id);
-                    const mapsUrl = `maps://?q=${encodeURIComponent(lot.q)}`;
-                    
-                    const lotRow = document.createElement('div');
-                    lotRow.className = 'lot-row';
-                    
-                    lotRow.innerHTML = `
-                        <div class="lot-header-line">
-                            <div class="lot-name-container">
-                                <div class="lot-name">${lot.name}</div>
-                                <div class="lot-status-text">${savedTime}</div>
-                            </div>
-                            <a class="map-btn" href="${mapsUrl}">📍 Map</a>
-                        </div>
-                        <div><span class="trend-badge">${trendText}</span></div>
-                        <div class="btn-group">
-                            <button class="status-btn ${savedState === 'available' ? 'active' : ''}" data-status="available" onclick="setStatus('${lot.id}', 'available')">Available</button>
-                            <button class="status-btn ${savedState === 'fast' ? 'active' : ''}" data-status="fast" onclick="setStatus('${lot.id}', 'fast')">Filling Fast</button>
-                            <button class="status-btn ${savedState === 'full' ? 'active' : ''}" data-status="full" onclick="setStatus('${lot.id}', 'full')">Full</button>
-                        </div>
-                    `;
-                    lotsContainer.appendChild(lotRow);
-                });
-
-                card.appendChild(header);
-                card.appendChild(lotsContainer);
-                container.appendChild(card);
-            });
+        function updateSummary() {
+            let available = 0;
+            parkingData.forEach(s => s.lots.forEach(l => {
+                if((localStorage.getItem(l.id) || 'available') === 'available') available++;
+            }));
+            document.getElementById('summary-count').innerText = `${available} Lots Available Now`;
         }
 
         window.setStatus = function(lotId, status) {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
+            haptic();
             localStorage.setItem(lotId, status);
-            localStorage.setItem(lotId + '_time', `Set to ${status.toUpperCase()} at ${timeString}`);
-
-            if (status === 'full') {
-                let history = JSON.parse(localStorage.getItem(lotId + '_history') || "[]");
-                const currentMinutesFromMidnight = (now.getHours() * 60) + now.getMinutes();
-                
-                history.push(currentMinutesFromMidnight);
-                if (history.length > 7) history.shift();
-                
-                localStorage.setItem(lotId + '_history', JSON.stringify(history));
+            localStorage.setItem(lotId + '_time', new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+            
+            if(status === 'full') {
+                let h = JSON.parse(localStorage.getItem(lotId+'_hist') || '[]');
+                h.push(Date.now());
+                localStorage.setItem(lotId+'_hist', JSON.stringify(h));
             }
-
-            renderApp();
+            render();
         };
 
-        renderApp();
+        function render() {
+            const container = document.getElementById('app-container');
+            container.innerHTML = '';
+            
+            parkingData.forEach(s => {
+                let card = document.createElement('div'); card.className = 'station-card';
+                card.innerHTML = `<div class="station-header">${s.station}</div>`;
+                
+                s.lots.forEach(l => {
+                    let state = localStorage.getItem(l.id) || 'available';
+                    let div = document.createElement('div'); div.className = 'lot-row';
+                    div.innerHTML = `
+                        <div class="lot-name">${l.name} <a href="maps://?q=${l.q}" style="font-size:12px; text-decoration:none">📍</a></div>
+                        <div class="trend">${localStorage.getItem(l.id+'_time') ? 'Last update: '+localStorage.getItem(l.id+'_time') : 'No updates today'}</div>
+                        <div class="btn-group">
+                            <button class="btn ${state==='available'?'active-avail':''}" onclick="setStatus('${l.id}','available')">OPEN</button>
+                            <button class="btn ${state==='fast'?'active-fast':''}" onclick="setStatus('${l.id}','fast')">BUSY</button>
+                            <button class="btn ${state==='full'?'active-full':''}" onclick="setStatus('${l.id}','full')">FULL</button>
+                        </div>
+                    `;
+                    card.appendChild(div);
+                });
+                container.appendChild(card);
+            });
+            updateSummary();
+        }
+
+        // Midnight Reset
+        if(localStorage.getItem('last_date') !== new Date().toDateString()){
+            localStorage.clear();
+            localStorage.setItem('last_date', new Date().toDateString());
+        }
+
+        render();
     </script>
 </body>
 </html>
