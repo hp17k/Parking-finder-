@@ -115,6 +115,17 @@
             margin-top: 2px;
         }
 
+        .trend-badge {
+            display: inline-block;
+            font-size: 11px;
+            background: #e5e5ea;
+            color: #48484a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
         .btn-group {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -153,16 +164,37 @@
             border-color: var(--red);
             color: #b31a12;
         }
+
+        .control-panel {
+            text-align: center;
+            margin-top: 30px;
+            padding: 10px;
+        }
+
+        .reset-btn {
+            background: transparent;
+            border: 1px dashed var(--text-sub);
+            color: var(--text-sub);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
     <header>
         <h1>T8 Parking Finder</h1>
-        <p>Select a station to view & update specific lots</p>
+        <p>Auto-clears at midnight • Learns your schedule</p>
     </header>
 
     <div id="app-container"></div>
+
+    <div class="control-panel">
+        <button class="reset-btn" onclick="manualReset()">🔄 Clear All Data & Reset Trends</button>
+    </div>
 
     <script>
         const parkingData = [
@@ -208,24 +240,44 @@
                     { id: "gle_railway", name: "Railway Parade (East Side)" },
                     { id: "gle_roywatts", name: "Roy Watts Rd (West Side)" }
                 ]
-            },
-            {
-                station: "Holsworthy",
-                lots: [
-                    { id: "hol_boulevarde", name: "The Boulevarde Multi-Deck" },
-                    { id: "hol_overflow", name: "Ground Overflow Lot" }
-                ]
-            },
-            {
-                station: "Edmondson Park",
-                lots: [
-                    { id: "edm_soldiers", name: "Soldiers Pde Multi-Storey" },
-                    { id: "edm_macdonald", name: "MacDonald Rd Ground Lot" }
-                ]
             }
         ];
 
+        // NEW: Checks if a calendar day has passed since last open. If yes, wipe statuses.
+        function checkMidnightReset() {
+            const todayString = new Date().toDateString();
+            const lastSavedDate = localStorage.getItem('app_last_run_date');
+            
+            if (lastSavedDate && lastSavedDate !== todayString) {
+                parkingData.forEach(item => {
+                    item.lots.forEach(lot => {
+                        localStorage.removeItem(lot.id);
+                        localStorage.removeItem(lot.id + '_time');
+                    });
+                });
+            }
+            localStorage.setItem('app_last_run_date', todayString);
+        }
+
+        // NEW: Algorithmic trend intelligence calculation based on historical inputs
+        function getTrendPrediction(lotId) {
+            const history = JSON.parse(localStorage.getItem(lotId + '_history') || "[]");
+            if (history.length === 0) return "📈 Learning your routine...";
+            
+            const totalMinutes = history.reduce((sum, mins) => sum + mins, 0);
+            const avgMinutes = Math.round(totalMinutes / history.length);
+            
+            const hours = Math.floor(avgMinutes / 60);
+            const mins = avgMinutes % 60;
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12;
+            const displayMins = mins < 10 ? '0' + mins : mins;
+            
+            return `💡 Trend: Usually fills by ${displayHours}:${displayMins} ${ampm}`;
+        }
+
         function renderApp() {
+            checkMidnightReset();
             const container = document.getElementById('app-container');
             container.innerHTML = '';
 
@@ -243,7 +295,8 @@
 
                 item.lots.forEach(lot => {
                     const savedState = localStorage.getItem(lot.id) || 'available';
-                    const savedTime = localStorage.getItem(lot.id + '_time') || 'No updates yet';
+                    const savedTime = localStorage.getItem(lot.id + '_time') || 'No updates today';
+                    const trendText = getTrendPrediction(lot.id);
                     
                     const lotRow = document.createElement('div');
                     lotRow.className = 'lot-row';
@@ -251,7 +304,8 @@
                     lotRow.innerHTML = `
                         <div class="lot-info">
                             <div class="lot-name">${lot.name}</div>
-                            <div class="lot-status-text" id="time-${lot.id}">Status: ${savedTime}</div>
+                            <div class="lot-status-text">${savedTime}</div>
+                            <div><span class="trend-badge">${trendText}</span></div>
                         </div>
                         <div class="btn-group">
                             <button class="status-btn ${savedState === 'available' ? 'active' : ''}" data-status="available" onclick="setStatus('${lot.id}', 'available')">🟢 Avail</button>
@@ -271,12 +325,29 @@
         window.setStatus = function(lotId, status) {
             const now = new Date();
             const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const dateStatus = `Updated at ${timeString}`;
-
+            
             localStorage.setItem(lotId, status);
-            localStorage.setItem(lotId + '_time', dateStatus);
+            localStorage.setItem(lotId + '_time', `Marked ${status.toUpperCase()} at ${timeString}`);
+
+            // Learning Engine Tracking: Store timestamps when marked FULL to map trends
+            if (status === 'full') {
+                let history = JSON.parse(localStorage.getItem(lotId + '_history') || "[]");
+                const currentMinutesFromMidnight = (now.getHours() * 60) + now.getMinutes();
+                
+                history.push(currentMinutesFromMidnight);
+                if (history.length > 7) history.shift(); // Learn using the trailing 7 updates
+                
+                localStorage.setItem(lotId + '_history', JSON.stringify(history));
+            }
 
             renderApp();
+        };
+
+        window.manualReset = function() {
+            if (confirm("Reset everything including learned smart habits?")) {
+                localStorage.clear();
+                renderApp();
+            }
         };
 
         renderApp();
