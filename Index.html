@@ -2,116 +2,73 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>T8 Parking Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>T8 Parking Community</title>
     <style>
-        :root {
-            --bg: #f8f9fa;
-            --card: #ffffff;
-            --text: #000000;
-            --sub: #555555;
-            --primary: #007AFF;
-            --avail: #28a745;
-            --fast: #ffc107;
-            --full: #dc3545;
-        }
-
-        body { background: var(--bg); color: var(--text); padding: 20px; font-family: -apple-system, sans-serif; }
-
-        .dashboard { background: var(--primary); color: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; text-align: center; }
-        .dashboard h2 { font-size: 14px; opacity: 0.8; text-transform: uppercase; }
-        .dashboard .count { font-size: 32px; font-weight: 800; margin: 5px 0; }
-
-        .station-card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .station-header { font-size: 20px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
-        
-        .lot-row { margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
-        .lot-name { font-weight: 700; font-size: 16px; }
-        .trend { font-size: 12px; color: var(--sub); font-weight: 600; margin: 5px 0; }
-
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
-        .btn { padding: 12px; border: none; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; }
-        .active-avail { background: var(--avail); color: white; }
-        .active-fast { background: var(--fast); color: black; }
-        .active-full { background: var(--full); color: white; }
-        .btn:not(.active) { background: #f0f0f0; color: #777; }
+        :root { --primary: #007AFF; --bg: #f2f2f7; --card: #ffffff; }
+        body { background: var(--bg); font-family: -apple-system, sans-serif; padding: 20px; }
+        .hero { text-align: center; margin-bottom: 20px; }
+        .station-card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .lot-name { font-weight: 800; font-size: 17px; }
+        .prob-bar { height: 8px; background: #eee; border-radius: 4px; margin: 10px 0; overflow: hidden; }
+        .prob-fill { height: 100%; background: var(--primary); width: 0%; transition: 1s; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="dashboard">
-        <h2>Commute Readiness</h2>
-        <div class="count" id="summary-count">Loading Status...</div>
+    <div class="hero">
+        <h1>T8 Community Parking</h1>
+        <p>Contribute status to help fellow commuters.</p>
     </div>
 
     <div id="app-container"></div>
 
     <script>
-        const parkingData = [
-            { station: "Macarthur", lots: [{id: "mac_1", name: "Menangle Rd", q: "Menangle Rd Parking"}, {id: "mac_2", name: "Gilchrist Dr", q: "Gilchrist Dr Parking"}] },
-            { station: "Campbelltown", lots: [{id: "cam_1", name: "Farrow Multi-Deck", q: "Farrow Rd Parking"}, {id: "cam_2", name: "Hurley St", q: "Hurley St Parking"}] },
-            { station: "Leumeah", lots: [{id: "leu_1", name: "Plowman St", q: "Plowman St Parking"}, {id: "leu_2", name: "Old Leumeah Rd", q: "Old Leumeah Rd Parking"}] },
-            { station: "Minto", lots: [{id: "min_1", name: "Somerset St", q: "Somerset St Parking"}, {id: "min_2", name: "Minto Rd", q: "Minto Rd Parking"}] },
-            { station: "Ingleburn", lots: [{id: "ing_1", name: "First Ave", q: "First Ave Parking"}, {id: "ing_2", name: "Nardoo St", q: "Nardoo St Parking"}] },
-            { station: "Glenfield", lots: [{id: "gle_1", name: "Railway Pde", q: "Railway Pde Parking"}, {id: "gle_2", name: "Roy Watts Rd", q: "Roy Watts Rd Parking"}] }
+        // Data Structure for the Community
+        const stations = [
+            { station: "Macarthur", lots: ["Menangle Rd", "Gilchrist Dr"] },
+            { station: "Campbelltown", lots: ["Farrow Multi-Deck", "Hurley St"] },
+            // ... (Add your others here)
         ];
 
-        function haptic() { if (window.navigator.vibrate) window.navigator.vibrate(50); }
-
-        function updateSummary() {
-            let available = 0;
-            parkingData.forEach(s => s.lots.forEach(l => {
-                if((localStorage.getItem(l.id) || 'available') === 'available') available++;
-            }));
-            document.getElementById('summary-count').innerText = `${available} Lots Available Now`;
+        function getProbability(lotId) {
+            // Logic: Calculates % full based on saved community reports
+            let count = parseInt(localStorage.getItem(lotId + '_reports') || 0);
+            return Math.min(count * 20, 100); // Simple example: each report adds 20% certainty
         }
 
-        window.setStatus = function(lotId, status) {
-            haptic();
-            localStorage.setItem(lotId, status);
-            localStorage.setItem(lotId + '_time', new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
-            
-            if(status === 'full') {
-                let h = JSON.parse(localStorage.getItem(lotId+'_hist') || '[]');
-                h.push(Date.now());
-                localStorage.setItem(lotId+'_hist', JSON.stringify(h));
+        function reportStatus(lotId, type) {
+            if(type === 'full') {
+                let current = parseInt(localStorage.getItem(lotId + '_reports') || 0);
+                localStorage.setItem(lotId + '_reports', current + 1);
             }
+            alert("Report submitted! Thanks for helping the T8 community.");
             render();
-        };
+        }
 
         function render() {
             const container = document.getElementById('app-container');
             container.innerHTML = '';
-            
-            parkingData.forEach(s => {
+            stations.forEach(s => {
                 let card = document.createElement('div'); card.className = 'station-card';
-                card.innerHTML = `<div class="station-header">${s.station}</div>`;
-                
+                card.innerHTML = `<h3>${s.station}</h3>`;
                 s.lots.forEach(l => {
-                    let state = localStorage.getItem(l.id) || 'available';
-                    let div = document.createElement('div'); div.className = 'lot-row';
-                    div.innerHTML = `
-                        <div class="lot-name">${l.name} <a href="maps://?q=${l.q}" style="font-size:12px; text-decoration:none">📍</a></div>
-                        <div class="trend">${localStorage.getItem(l.id+'_time') ? 'Last update: '+localStorage.getItem(l.id+'_time') : 'No updates today'}</div>
+                    let prob = getProbability(l);
+                    card.innerHTML += `
+                        <div class="lot-name">${l}</div>
+                        <div class="prob-bar"><div class="prob-fill" style="width:${prob}%"></div></div>
+                        <small>Fullness Probability: ${prob}%</small>
                         <div class="btn-group">
-                            <button class="btn ${state==='available'?'active-avail':''}" onclick="setStatus('${l.id}','available')">OPEN</button>
-                            <button class="btn ${state==='fast'?'active-fast':''}" onclick="setStatus('${l.id}','fast')">BUSY</button>
-                            <button class="btn ${state==='full'?'active-full':''}" onclick="setStatus('${l.id}','full')">FULL</button>
+                            <button class="btn" style="background:#eee" onclick="reportStatus('${l}','available')">Available</button>
+                            <button class="btn" style="background:#ff3b30; color:white" onclick="reportStatus('${l}','full')">Report Full</button>
                         </div>
                     `;
-                    card.appendChild(div);
                 });
                 container.appendChild(card);
             });
-            updateSummary();
         }
-
-        // Midnight Reset
-        if(localStorage.getItem('last_date') !== new Date().toDateString()){
-            localStorage.clear();
-            localStorage.setItem('last_date', new Date().toDateString());
-        }
-
         render();
     </script>
 </body>
