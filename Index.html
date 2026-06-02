@@ -3,33 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>T8 Parking Community</title>
+    <title>T8 Parking Live</title>
     <style>
-        :root { --primary: #007AFF; --bg: #f2f2f7; --card: #ffffff; 
-                --empty: #34c759; --avail: #5856d6; --almost: #ffcc00; --full: #ff3b30; }
-        body { background: var(--bg); font-family: -apple-system, sans-serif; padding: 20px; }
-        .station-card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .lot-name { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn { padding: 10px; border-radius: 8px; border: none; font-weight: 600; font-size: 12px; cursor: pointer; color: white; }
+        :root { --bg: #121212; --card: #1e1e1e; --text: #ffffff; --primary: #007AFF; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; padding: 20px; }
+        .header-box { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 20px; text-align: center; }
+        .station-card { background: var(--card); border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+        .lot-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .btn { padding: 10px; border-radius: 8px; border: none; font-weight: 700; color: white; cursor: pointer; font-size: 11px; }
+        .map-link { background: var(--primary); padding: 6px 12px; border-radius: 6px; text-decoration: none; color: white; font-size: 12px; }
     </style>
 </head>
 <body>
-    <h1>T8 Community Parking</h1>
+
+    <div class="header-box" id="live-info">
+        <div id="datetime">Loading date & time...</div>
+        <div id="weather">Loading weather...</div>
+    </div>
+
     <div id="app-container"></div>
+
     <script>
+        // Update Time & Date
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('datetime').innerHTML = `<b>${now.toLocaleDateString()}</b> | ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+        }
+        setInterval(updateTime, 1000);
+
+        // Fetch Weather for Leumeah
+        async function getWeather() {
+            // Using a public open-access weather API for Leumeah (Sydney)
+            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.06&longitude=150.82&current=temperature_2m,weather_code');
+            const data = await res.json();
+            document.getElementById('weather').innerText = `Leumeah: ${data.current.temperature_2m}°C`;
+        }
+        getWeather();
+
         const stations = [
-            { station: "Macarthur", lots: ["Menangle Rd Lot", "Gilchrist Dr Lot"] },
-            { station: "Campbelltown", lots: ["Farrow Multi-Deck", "Farrow Outside Lot", "Hurley St Lot"] },
-            { station: "Leumeah", lots: ["Plowman St Lot", "Old Leumeah Rd Lot"] },
-            { station: "Minto", lots: ["Somerset St Lot", "Minto Rd West Lot"] },
-            { station: "Ingleburn", lots: ["First Ave Multi-Storey", "Nardoo St Lot"] },
-            { station: "Glenfield", lots: ["Railway Parade East", "Roy Watts Rd West"] }
+            { station: "Macarthur", lots: [
+                {name: "Menangle Rd", q: "Menangle Rd Commuter Parking"}, 
+                {name: "Gilchrist Dr", q: "Gilchrist Dr Macarthur"}
+            ]},
+            { station: "Campbelltown", lots: [
+                {name: "Farrow Multi-Deck", q: "Farrow Rd Multi-Deck Parking"}, 
+                {name: "Farrow Outside", q: "Farrow Rd Outside Parking"}, 
+                {name: "Hurley St", q: "Hurley St Campbelltown"}
+            ]},
+            { station: "Leumeah", lots: [{name: "Plowman St", q: "Plowman St Leumeah"}, {name: "Old Leumeah Rd", q: "Old Leumeah Rd Leumeah"}]},
+            { station: "Minto", lots: [{name: "Somerset St", q: "Somerset St Minto"}, {name: "Minto Rd West", q: "Minto Rd West Minto"}]},
+            { station: "Ingleburn", lots: [{name: "First Ave", q: "First Ave Ingleburn"}, {name: "Nardoo St", q: "Nardoo St Ingleburn"}]},
+            { station: "Glenfield", lots: [{name: "Railway Pde", q: "Railway Pde Glenfield"}, {name: "Roy Watts Rd", q: "Roy Watts Rd Glenfield"}]}
         ];
 
-        function report(lot, status) {
+        function report(lot, status, color) {
             localStorage.setItem(lot, status);
-            alert("Reported: " + status);
+            localStorage.setItem(lot + '_time', new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+            localStorage.setItem(lot + '_color', color);
             render();
         }
 
@@ -38,21 +69,29 @@
             container.innerHTML = '';
             stations.forEach(s => {
                 let card = document.createElement('div'); card.className = 'station-card';
-                card.innerHTML = `<h3>${s.station}</h3>`;
+                card.innerHTML = `<h3 style="margin-bottom:15px; color:#aaa">${s.station}</h3>`;
                 s.lots.forEach(l => {
-                    let cur = localStorage.getItem(l) || 'Not Reported';
+                    let cur = localStorage.getItem(l.name) || 'Not Reported';
+                    let col = localStorage.getItem(l.name + '_color') || '#333';
                     card.innerHTML += `
-                        <div class="lot-name">${l} (Status: ${cur})</div>
-                        <div class="btn-grid">
-                            <button class="btn" style="background:var(--empty)" onclick="report('${l}','Empty')">Empty</button>
-                            <button class="btn" style="background:var(--avail)" onclick="report('${l}','Available')">Available</button>
-                            <button class="btn" style="background:var(--almost)" onclick="report('${l}','Almost Full')">Almost Full</button>
-                            <button class="btn" style="background:var(--full)" onclick="report('${l}','Completely Full')">Completely Full</button>
-                        </div><br>`;
+                        <div style="background:${col}; padding:10px; border-radius:10px; margin-bottom:10px;">
+                            <div class="lot-header">
+                                <span style="font-weight:800">${l.name}</span>
+                                <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(l.q)}" target="_blank">Navigate 🗺️</a>
+                            </div>
+                            <div style="font-size:12px; margin-bottom:8px;">Status: ${cur}</div>
+                            <div class="btn-grid">
+                                <button class="btn" style="background:#2e7d32" onclick="report('${l.name}','Empty','#2e7d32')">Empty</button>
+                                <button class="btn" style="background:#1565c0" onclick="report('${l.name}','Available','#1565c0')">Available</button>
+                                <button class="btn" style="background:#f9a825" onclick="report('${l.name}','Almost Full','#f9a825')">Almost Full</button>
+                                <button class="btn" style="background:#c62828" onclick="report('${l.name}','Completely Full','#c62828')">Full</button>
+                            </div>
+                        </div>`;
                 });
                 container.appendChild(card);
             });
         }
+        updateTime();
         render();
     </script>
 </body>
