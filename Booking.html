@@ -25,17 +25,77 @@
             flex-direction: column;
         }
 
-        /* Navigation Menu Bar */
+        /* Top Bar Layout */
         nav {
             background-color: var(--surface-color);
             border-bottom: 2px solid var(--primary-color);
             padding: 15px 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 100;
+        }
+
+        /* Hamburger Dropdown Menu Toggle (Top Left) */
+        .menu-container {
+            position: relative;
+            margin-right: 20px;
+        }
+
+        .hamburger-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .hamburger-btn:focus {
+            outline: none;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 140%;
+            left: 0;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 4px;
+            width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+        }
+
+        .dropdown-menu a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            font-size: 16px;
+            text-transform: uppercase;
+            padding: 14px 20px;
+            display: block;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .dropdown-menu a:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-menu a:hover, .dropdown-menu a.active {
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+        }
+
+        /* Keep menu open when targeted or active */
+        .menu-container.open .dropdown-menu {
+            display: block;
         }
 
         .logo {
@@ -46,25 +106,6 @@
         }
 
         .logo span {
-            color: var(--primary-color);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-family: 'Arial', sans-serif;
-            font-weight: bold;
-            font-size: 14px;
-            text-transform: uppercase;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover, .nav-links a.active {
             color: var(--primary-color);
         }
 
@@ -104,15 +145,11 @@
             text-decoration: none;
             border-radius: 4px;
             letter-spacing: 1px;
-            transition: background 0.3s ease, transform 0.1s ease;
+            transition: background 0.3s ease;
         }
 
         .cta-btn:hover {
             background-color: #cc0029;
-        }
-
-        .cta-btn:active {
-            transform: scale(0.98);
         }
 
         footer {
@@ -129,15 +166,18 @@
 <body>
 
     <nav>
-        <div class="logo">Eatzwa <span>Fades</span></div>
-        <div class="nav-links">
-            <a href="index.html" class="active">Home</a>
-            <a href="news.html">News</a>
-            <a href="about.html">About</a>
-            <a href="Booking.html">Booking</a>
-            <a href="gallery.html">Gallery</a>
-            <a href="contact.html">Contact</a>
+        <div class="menu-container" id="menuContainer">
+            <button class="hamburger-btn" onclick="toggleMenu()" aria-label="Toggle Menu">&#9776;</button>
+            <div class="dropdown-menu">
+                <a href="index.html" class="active">Home</a>
+                <a href="news.html">News</a>
+                <a href="about.html">About</a>
+                <a href="Booking.html">Booking</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="contact.html">Contact</a>
+            </div>
         </div>
+        <div class="logo">Eatzwa <span>Fades</span></div>
     </nav>
 
     <div class="hero">
@@ -150,5 +190,18 @@
         &copy; 2026 Eatzwa Fades. All Rights Reserved.
     </footer>
 
+    <script>
+        function toggleMenu() {
+            document.getElementById('menuContainer').classList.toggle('open');
+        }
+
+        // Close menu if user clicks anywhere outside of it
+        window.addEventListener('click', function(e) {
+            const container = document.getElementById('menuContainer');
+            if (!container.contains(e.target)) {
+                container.classList.remove('open');
+            }
+        });
+    </script>
 </body>
 </html>
