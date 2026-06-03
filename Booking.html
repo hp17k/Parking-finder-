@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eatzwa Fades | Booking</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #d4af37; /* Barber Gold */
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--surface-color);
+            min-height: 100vh;
+            padding: 30px 20px;
+            box-sizing: border-box;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 32px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input[type="date"], input[type="time"], input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--bg-color);
+            border: 1px solid #333;
+            color: var(--text-main);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Hide default calendar icon for a cleaner look */
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--primary-color);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 15px;
+            letter-spacing: 1px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #f2c94c;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .success-message {
+            display: none;
+            background-color: rgba(40, 167, 69, 0.1);
+            border: 1px solid #28a745;
+            color: #28a745;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1>Eatzwa Fades</h1>
+            <p>Precision Fades & Beard Line-Ups</p>
+        </header>
+
+        <div id="successMessage" class="success-message">
+            Booking locked in! We'll see you in the chair.
+        </div>
+
+        <!-- Replace YOUR_FORMSPREE_ID with the code Formspree gives you -->
+        <form id="bookingForm" action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST">
+            <div class="form-group">
+                <label for="service">Service</label>
+                <select id="service" name="service" required>
+                    <option value="" disabled selected>Choose your cut...</option>
+                    <option value="Skin Fade">Skin Fade - $40</option>
+                    <option value="Taper Fade">Taper Fade - $35</option>
+                    <option value="Beard Line-Up">Beard Line-Up - $20</option>
+                    <option value="Fade & Beard Combo">Fade & Beard Combo - $55</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time">Time</label>
+                <input type="time" id="time" name="time" required>
+            </div>
+
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" placeholder="Your full name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" placeholder="0400 000 000" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Lock It In</button>
+        </form>
+    </div>
+
+    <script>
+        // Restrict past dates in the calendar
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').setAttribute('min', today);
+
+        // Trend Learning Algorithm
+        function applyTrends() {
+            let trends = JSON.parse(localStorage.getItem('eatzwa_service_trends')) || {};
+            if (Object.keys(trends).length === 0) return;
+            
+            // Identify the most frequently booked service
+            let topService = Object.keys(trends).reduce((a, b) => trends[a] > trends[b] ? a : b);
+            
+            // Auto-select the trending service
+            const serviceSelect = document.getElementById('service');
+            if (serviceSelect && topService) {
+                serviceSelect.value = topService;
+            }
+        }
+
+        function recordTrend(service) {
+            let trends = JSON.parse(localStorage.getItem('eatzwa_service_trends')) || {};
+            trends[service] = (trends[service] || 0) + 1;
+            localStorage.setItem('eatzwa_service_trends', JSON.stringify(trends));
+        }
+
+        // Apply trends when the app loads
+        applyTrends();
+
+        // Form Submission Logic
+        const form = document.getElementById('bookingForm');
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            
+            const selectedService = document.getElementById('service').value;
+            const data = new FormData(form);
+
+            try {
+                // Send data to Formspree
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: data,
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (response.ok) {
+                    // Log the trend locally
+                    recordTrend(selectedService);
+
+                    // Show success state
+                    const successMsg = document.getElementById('successMessage');
+                    successMsg.style.display = 'block';
+
+                    // Automatic Reset Execution
+                    form.reset();
+
+                    // Re-apply trends after reset
+                    applyTrends();
+
+                    // Hide success message after 4 seconds
+                    setTimeout(() => {
+                        successMsg.style.display = 'none';
+                    }, 4000);
+                } else {
+                    alert("There was an issue sending your booking. Please check your setup.");
+                }
+            } catch (error) {
+                console.error("Booking failed:", error);
+            }
+        });
+    </script>
+</body>
+</html>
