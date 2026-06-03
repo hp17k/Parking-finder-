@@ -85,7 +85,6 @@
             border-color: var(--primary-color);
         }
 
-        /* Hide default calendar icon for a cleaner look */
         input[type="date"]::-webkit-calendar-picker-indicator,
         input[type="time"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
@@ -141,8 +140,8 @@
             Booking locked in! We'll see you in the chair.
         </div>
 
-        <!-- Replace YOUR_FORMSPREE_ID with the code Formspree gives you -->
-        <form id="bookingForm" action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST">
+        <!-- Linked directly to your Formspree account -->
+        <form id="bookingForm" action="https://formspree.io/f/xnjyazzy" method="POST">
             <div class="form-group">
                 <label for="service">Service</label>
                 <select id="service" name="service" required>
@@ -188,10 +187,8 @@
             let trends = JSON.parse(localStorage.getItem('eatzwa_service_trends')) || {};
             if (Object.keys(trends).length === 0) return;
             
-            // Identify the most frequently booked service
             let topService = Object.keys(trends).reduce((a, b) => trends[a] > trends[b] ? a : b);
             
-            // Auto-select the trending service
             const serviceSelect = document.getElementById('service');
             if (serviceSelect && topService) {
                 serviceSelect.value = topService;
@@ -204,7 +201,7 @@
             localStorage.setItem('eatzwa_service_trends', JSON.stringify(trends));
         }
 
-        // Apply trends when the app loads
+        // Apply trends automatically on page load
         applyTrends();
 
         // Form Submission Logic
@@ -216,7 +213,6 @@
             const data = new FormData(form);
 
             try {
-                // Send data to Formspree
                 const response = await fetch(form.action, {
                     method: form.method,
                     body: data,
@@ -224,25 +220,20 @@
                 });
 
                 if (response.ok) {
-                    // Log the trend locally
                     recordTrend(selectedService);
 
-                    // Show success state
                     const successMsg = document.getElementById('successMessage');
                     successMsg.style.display = 'block';
 
-                    // Automatic Reset Execution
+                    // Form automatically resets cleanly
                     form.reset();
-
-                    // Re-apply trends after reset
                     applyTrends();
 
-                    // Hide success message after 4 seconds
                     setTimeout(() => {
                         successMsg.style.display = 'none';
                     }, 4000);
                 } else {
-                    alert("There was an issue sending your booking. Please check your setup.");
+                    alert("There was an issue sending your booking. Please try again.");
                 }
             } catch (error) {
                 console.error("Booking failed:", error);
