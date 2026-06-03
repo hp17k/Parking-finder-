@@ -3,242 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eatzwa Fades | Booking</title>
+    <title>Eatzwa Fades | Home</title>
     <style>
         :root {
-            --bg-color: #121212;
-            --surface-color: #1e1e1e;
-            --primary-color: #d4af37; /* Barber Gold */
+            --bg-color: #000000;
+            --surface-color: #111111;
+            --primary-color: #ff0033; /* Barber Red */
             --text-main: #ffffff;
-            --text-muted: #a0a0a0;
+            --text-muted: #cccccc;
+            --border-color: #222222;
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Impact', 'Arial Black', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            display: flex;
-            justify-content: center;
-        }
-
-        .app-container {
-            width: 100%;
-            max-width: 480px;
-            background-color: var(--surface-color);
             min-height: 100vh;
-            padding: 30px 20px;
-            box-sizing: border-box;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
         }
 
-        header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #333;
-            margin-bottom: 25px;
+        /* Navigation Menu Bar */
+        nav {
+            background-color: var(--surface-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        header h1 {
-            margin: 0;
-            color: var(--primary-color);
-            font-size: 32px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        header p {
-            margin: 5px 0 0;
-            color: var(--text-muted);
-            font-size: 15px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        select, input[type="date"], input[type="time"], input[type="text"], input[type="tel"] {
-            width: 100%;
-            padding: 14px;
-            background-color: var(--bg-color);
-            border: 1px solid #333;
+        .logo {
             color: var(--text-main);
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        input[type="date"]::-webkit-calendar-picker-indicator,
-        input[type="time"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            cursor: pointer;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 16px;
-            background-color: var(--primary-color);
-            color: #000;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            margin-top: 15px;
+            font-size: 24px;
             letter-spacing: 1px;
-            transition: background-color 0.3s ease, transform 0.1s ease;
+            text-transform: uppercase;
         }
 
-        .submit-btn:hover {
-            background-color: #f2c94c;
+        .logo span {
+            color: var(--primary-color);
         }
 
-        .submit-btn:active {
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        /* Hero Section */
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=1200') no-repeat center center/cover;
+        }
+
+        .hero h1 {
+            font-size: 60px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .hero p {
+            font-family: 'Arial', sans-serif;
+            color: var(--text-muted);
+            font-size: 18px;
+            max-width: 600px;
+            margin: 20px 0 30px;
+        }
+
+        .cta-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 40px;
+            font-size: 18px;
+            text-transform: uppercase;
+            text-decoration: none;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            transition: background 0.3s ease, transform 0.1s ease;
+        }
+
+        .cta-btn:hover {
+            background-color: #cc0029;
+        }
+
+        .cta-btn:active {
             transform: scale(0.98);
         }
 
-        .success-message {
-            display: none;
-            background-color: rgba(40, 167, 69, 0.1);
-            border: 1px solid #28a745;
-            color: #28a745;
-            padding: 15px;
-            border-radius: 8px;
+        footer {
+            background-color: var(--surface-color);
             text-align: center;
-            margin-bottom: 20px;
-            font-weight: bold;
+            padding: 15px;
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            color: #555;
+            border-top: 1px solid var(--border-color);
         }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <header>
-            <h1>Eatzwa Fades</h1>
-            <p>Precision Fades & Beard Line-Ups</p>
-        </header>
-
-        <div id="successMessage" class="success-message">
-            Booking locked in! We'll see you in the chair.
+    <nav>
+        <div class="logo">Eatzwa <span>Fades</span></div>
+        <div class="nav-links">
+            <a href="index.html" class="active">Home</a>
+            <a href="news.html">News</a>
+            <a href="about.html">About</a>
+            <a href="Booking.html">Booking</a>
+            <a href="gallery.html">Gallery</a>
+            <a href="contact.html">Contact</a>
         </div>
+    </nav>
 
-        <!-- Linked directly to your Formspree account -->
-        <form id="bookingForm" action="https://formspree.io/f/xnjyazzy" method="POST">
-            <div class="form-group">
-                <label for="service">Service</label>
-                <select id="service" name="service" required>
-                    <option value="" disabled selected>Choose your cut...</option>
-                    <option value="Skin Fade">Skin Fade - $40</option>
-                    <option value="Taper Fade">Taper Fade - $35</option>
-                    <option value="Beard Line-Up">Beard Line-Up - $20</option>
-                    <option value="Fade & Beard Combo">Fade & Beard Combo - $55</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="date">Date</label>
-                <input type="date" id="date" name="date" required>
-            </div>
-
-            <div class="form-group">
-                <label for="time">Time</label>
-                <input type="time" id="time" name="time" required>
-            </div>
-
-            <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" placeholder="Your full name" required>
-            </div>
-
-            <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input type="tel" id="phone" name="phone" placeholder="0400 000 000" required>
-            </div>
-
-            <button type="submit" class="submit-btn">Lock It In</button>
-        </form>
+    <div class="hero">
+        <h1>Sharp Fades.<br>Crisp Line-ups.</h1>
+        <p>No shortcuts. Just premium craftsmanship tailored specifically to your style. Step up your look today.</p>
+        <a href="Booking.html" class="cta-btn">Book Your Chair</a>
     </div>
 
-    <script>
-        // Restrict past dates in the calendar
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('date').setAttribute('min', today);
+    <footer>
+        &copy; 2026 Eatzwa Fades. All Rights Reserved.
+    </footer>
 
-        // Trend Learning Algorithm
-        function applyTrends() {
-            let trends = JSON.parse(localStorage.getItem('eatzwa_service_trends')) || {};
-            if (Object.keys(trends).length === 0) return;
-            
-            let topService = Object.keys(trends).reduce((a, b) => trends[a] > trends[b] ? a : b);
-            
-            const serviceSelect = document.getElementById('service');
-            if (serviceSelect && topService) {
-                serviceSelect.value = topService;
-            }
-        }
-
-        function recordTrend(service) {
-            let trends = JSON.parse(localStorage.getItem('eatzwa_service_trends')) || {};
-            trends[service] = (trends[service] || 0) + 1;
-            localStorage.setItem('eatzwa_service_trends', JSON.stringify(trends));
-        }
-
-        // Apply trends automatically on page load
-        applyTrends();
-
-        // Form Submission Logic
-        const form = document.getElementById('bookingForm');
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault(); 
-            
-            const selectedService = document.getElementById('service').value;
-            const data = new FormData(form);
-
-            try {
-                const response = await fetch(form.action, {
-                    method: form.method,
-                    body: data,
-                    headers: { 'Accept': 'application/json' }
-                });
-
-                if (response.ok) {
-                    recordTrend(selectedService);
-
-                    const successMsg = document.getElementById('successMessage');
-                    successMsg.style.display = 'block';
-
-                    // Form automatically resets cleanly
-                    form.reset();
-                    applyTrends();
-
-                    setTimeout(() => {
-                        successMsg.style.display = 'none';
-                    }, 4000);
-                } else {
-                    alert("There was an issue sending your booking. Please try again.");
-                }
-            } catch (error) {
-                console.error("Booking failed:", error);
-            }
-        });
-    </script>
 </body>
 </html>
